@@ -6,9 +6,9 @@ This projects contains source code with an example of how to implement an AWS St
 - **template.yaml** - A template that defines the application's AWS resources.
 - **waitable-stepfunction.asl.json** - The file that contains the Step Function Workflow.
 
-This sample demonstrates the power of Step Functions when orchestrating time sensitive applications (e.g. send email notification to user after 2h) while keeping costs under control since you don't pay for the time that AWS Step Functions is on a wait state.
+This sample demonstrates the power of AWS Step Functions when orchestrating time sensitive applications (e.g. send email notification to user after 2h) while keeping costs under control since you don't pay for the time that AWS Step Functions is on a wait state.
 
-To make it reusable in real use cases we used API Gateway as a way to trigger and send input parameters to the State Machine, and DynamoDB as the persistent store for each item Status. The final workflow looks like this:
+To make it reusable in real use cases, we use Amazon API Gateway as a way to trigger and send input parameters to the State Machine, and AWS DynamoDB as the persistent store for each item Status. The final workflow looks like this:
 
 ![stepfunctions_graph](/images/workflow.png)
 
@@ -32,19 +32,20 @@ sam deploy --guided
 
 ## Try on AWS console
 
-1. Sign in to your aws console at https://console.aws.amazon.com
-2. Go to the API Gateway service
-3. Select the **waitable-stepfunction-pattern-api** API 
-   > this is the default name on the SAM template. If you changed it the API may have a different name
+1. Sign in to your AWS console at https://console.aws.amazon.com
+2. Go to the Amazon API Gateway service
+3. Select your new API *(e.g. aws-stepfunction-waitable-pattern)*
 4. Select the **POST** method on the resources tab
 5. Select the **Test** button on the right panel
 6. Specify a valid json payload as the **request body**, like so:
+
     ```json
     {
       "Id": "4f30bb61-39bc-47f2-91c6-a7dba009f919",
       "StartTimestamp": "2021-06-25T17:47:00Z"
     }
     ```
+    
 7. Press the **Test** button. 
 You should get a valid response.
 
