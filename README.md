@@ -49,6 +49,27 @@ sam deploy --guided
 7. Press the **Test** button. 
 You should get a valid response.
 
+## Using cURL
+
+1. Open your prefered Terminal
+2. Make sure you have cURL installed
+    MacOS:
+
+    ```bash
+    brew install curl
+    ```
+
+3. Send a request to API Gateway
+
+  ```json
+  curl --location --request POST 'REPLACE_WITH_YOUR_API_GATEWAY_ENDPOINT' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+      "Id": "4f30bb61-39bc-47f2-91c6-a7dba009f919",
+      "StartTimestamp": "2021-06-25T17:47:00Z"
+  }'
+  ```
+
 ## Cleanup
 
 To delete the sample application that you created, use the AWS CLI. Assuming you used your project name for the stack name, you can run the following:
