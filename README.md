@@ -53,12 +53,13 @@ You should get a valid response.
 
 1. Open your prefered Terminal
 2. Make sure you have cURL installed
-    MacOS:
+   
+   MacOS:
 
-    ```bash
-    brew install curl
-    ```
-
+   ```bash
+   brew install curl
+   ```
+   
 3. Send a request to API Gateway
 
   ```json
