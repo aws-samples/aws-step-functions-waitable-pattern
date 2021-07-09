@@ -17,11 +17,14 @@ Resources:
             TableName: !Ref StatusTable
 
   StatusTable:
-    Type: AWS::Serverless::SimpleTable 
+    Type: AWS::DynamoDB::Table 
     Properties:
-      PrimaryKey:
-        Name: Id
-        Type: String
+      AttributeDefinitions:
+        - AttributeName: "Id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "Id"
+          KeyType: "HASH"
       ProvisionedThroughput:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1
@@ -41,29 +44,30 @@ Resources:
               Service:
                 - apigateway.amazonaws.com
       Policies:
-        - PolicyName: CallStepFunctions
+        - PolicyName: CallStepFunctionsAndScanDynamo
           PolicyDocument:
             Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
                   - 'states:StartExecution'
+                  - 'dynamodb:Scan'
                 Resource:
                   - !Ref WaitableStateMachine
+                  - !GetAtt StatusTable.Arn
   
-  apiGateway:
+  ApiGateway:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      EndpointConfiguration:
-        Types:
-          - REGIONAL
       Name: !Sub ${AWS::StackName}-api
 
-  apiGatewayRootMethod:
+  
+  ApiGatewayRootMethod:
     Type: AWS::ApiGateway::Method
     Properties:
       AuthorizationType: NONE
       HttpMethod: POST
+      OperationName: "StartWorkflow"
       MethodResponses:
         - StatusCode: 200
           ResponseModels:
@@ -76,10 +80,9 @@ Resources:
         PassthroughBehavior: WHEN_NO_TEMPLATES
         RequestTemplates: 
           application/json: !Sub 
-            - |- 
-              #set($data = $util.escapeJavaScript($input.json('$'))) 
+            - |-               
               { 
-                "input": "$data", 
+                "input": "{\"Id\" : \"$context.requestId\", \"StartTimestamp\": \"$input.path('$.StartTimestamp')\"}", 
                 "stateMachineArn": "${StateMachineArn}"
               }
             - { StateMachineArn: !Ref WaitableStateMachine }
@@ -87,15 +90,68 @@ Resources:
           - StatusCode: 200
             ResponseTemplates:
               application/json: ''
-      ResourceId: !GetAtt apiGateway.RootResourceId
-      RestApiId: !Ref apiGateway
+      ResourceId: !GetAtt ApiGateway.RootResourceId
+      RestApiId: !Ref ApiGateway
+
+  StatusResource:
+    Type: AWS::ApiGateway::Resource
+    DependsOn:
+      - ApiGateway
+    Properties: 
+      RestApiId: !Ref ApiGateway
+      ParentId: !GetAtt ApiGateway.RootResourceId
+      PathPart: "status"
+      
+  
+  StatusMethod:  
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: GET
+      OperationName: "GetStatus"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: Empty
+      Integration:
+        IntegrationHttpMethod: POST
+        Type: AWS
+        Credentials: !GetAtt ApiGatewayStepFunctionsRole.Arn 
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:dynamodb:action/Scan
+        PassthroughBehavior: WHEN_NO_TEMPLATES
+        RequestTemplates: 
+          application/json: !Sub 
+            - |- 
+              {
+                "TableName": "${TableName}"          
+              }
+            - { TableName: !Select [1, !Split ['/', !GetAtt StatusTable.Arn]] }
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: | 
+                #set($inputRoot = $input.path('$'))
+                {
+                    "items": [
+                        #foreach($elem in $inputRoot.Items) {
+                            "Id": "$elem.Id.S",
+                            "StartActionAt": "$elem.StartActionAt.S"
+                            "LastUpdated": "$elem.LastUpdated.S",
+                            "ProcessStatus": "$elem.ProcessStatus.S"
+                        }#if($foreach.hasNext),#end
+                  #end
+                    ]
+                }
+      ResourceId: !Ref StatusResource
+      RestApiId: !Ref ApiGateway
 
   apiGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
-      - apiGatewayRootMethod
+      - ApiGatewayRootMethod
+      - StatusMethod
     Properties:
-      RestApiId: !Ref apiGateway
+      RestApiId: !Ref ApiGateway
       StageName: 'dev'
       
 Outputs:
