@@ -33,21 +33,61 @@ sam deploy --guided
 ## Try on AWS console
 
 1. Sign in to your AWS console at https://console.aws.amazon.com
+
+
 2. Go to the Amazon API Gateway service
+
 3. Select your new API *(e.g. aws-stepfunction-waitable-pattern)*
+
 4. Select the **POST** method on the resources tab
+
 5. Select the **Test** button on the right panel
+
 6. Specify a valid json payload as the **request body**, like so:
 
     ```json
     {
-      "Id": "4f30bb61-39bc-47f2-91c6-a7dba009f919",
       "StartTimestamp": "2021-06-25T17:47:00Z"
     }
     ```
     
 7. Press the **Test** button. 
 You should get a valid response.
+
+    ```json
+    Job Id fe520f82-8f3e-4058-bb2d-e90f271fc3d6 started successfully. For additional information on process status use GET /status.
+    ```
+
+8. Select the **GET** method under the */status* resource
+
+9. Select the **Test** button on the right panel and press the **Test** button.
+   You should get a valid response.
+
+
+    ```json
+    {
+    "items": [
+        {
+          "Id": "4cb0702d-1b62-4b09-8482-fc1182ca4240",
+          "StartActionAt": "2021-07-09T13:50:00Z",
+          "LastUpdated": "2021-07-09T13:35:43.151Z",
+          "ProcessStatus": "STARTED"
+        },
+        {
+          "Id": "fe520f82-8f3e-4058-bb2d-e90f271fc3d6",
+          "StartActionAt": "2021-07-09T13:46:00Z",
+          "LastUpdated": "2021-07-09T13:45:59.462Z",
+          "ProcessStatus": "COMPLETED"
+        },
+        {
+          "Id": "46a332a6-18d5-4c17-89d5-db1eeb78baec",
+          "StartActionAt": "2021-07-09T13:40:00Z",
+          "LastUpdated": "2021-07-09T13:39:59.653Z",
+          "ProcessStatus": "COMPLETED"
+        }
+      ]
+    }
+    ```
 
 
 ## Using cURL
@@ -75,14 +115,53 @@ You should get a valid response.
 
 3. Send a request to API Gateway
 
-    ```json
+    ```bash
     curl --location --request POST 'REPLACE_WITH_YOUR_API_GATEWAY_ENDPOINT' \
     --header 'Content-Type: application/json' \
     --data-raw '{
-        "Id": "4f30bb61-39bc-47f2-91c6-a7dba009f919",
         "StartTimestamp": "2021-06-25T17:47:00Z"
     }'
     ```
+    You should get a valid response.
+
+    ```json
+    Job Id fe520f82-8f3e-4058-bb2d-e90f271fc3d6 started successfully. For additional information on process status use GET /status.
+    ```
+
+4. Check process status
+
+    ```bash
+    curl --location --request GET 'REPLACE_WITH_YOUR_API_GATEWAY_ENDPOINT'/status
+    ```
+
+    You should get a valid response.
+
+
+      ```json
+      {
+      "items": [
+          {
+            "Id": "4cb0702d-1b62-4b09-8482-fc1182ca4240",
+            "StartActionAt": "2021-07-09T13:50:00Z",
+            "LastUpdated": "2021-07-09T13:35:43.151Z",
+            "ProcessStatus": "STARTED"
+          },
+          {
+            "Id": "fe520f82-8f3e-4058-bb2d-e90f271fc3d6",
+            "StartActionAt": "2021-07-09T13:46:00Z",
+            "LastUpdated": "2021-07-09T13:45:59.462Z",
+            "ProcessStatus": "COMPLETED"
+          },
+          {
+            "Id": "46a332a6-18d5-4c17-89d5-db1eeb78baec",
+            "StartActionAt": "2021-07-09T13:40:00Z",
+            "LastUpdated": "2021-07-09T13:39:59.653Z",
+            "ProcessStatus": "COMPLETED"
+          }
+        ]
+      }
+      ```
+
 
 ## Cleanup
 

@@ -11,8 +11,11 @@
                     "Id": {
                         "S.$": "$.Id"
                     },
+                    "StartActionAt":{
+                        "S.$": "$.StartTimestamp"
+                    },
                     "ProcessStatus": {
-                        "S": "STARTING"
+                        "S": "STARTED"
                     },
                     "LastUpdated": {
                         "S.$": "$$.State.EnteredTime"
