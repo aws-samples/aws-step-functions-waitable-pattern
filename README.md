@@ -1,5 +1,7 @@
 ## AWS Step Functions Waitable Pattern
 
+[![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/aws-samples/aws-step-functions-waitable-pattern)
+
 This projects contains source code with an example of how to implement an AWS Step Function waitable pattern that you can deploy using the SAM CLI. It includes the following files and folders:
 
 - **statemachine** - Definition for the state machine that orchestrates the change between status after the defined time is reached.
@@ -10,7 +12,7 @@ This sample demonstrates the power of AWS Step Functions when orchestrating time
 
 To make it reusable in real use cases, we use Amazon API Gateway as a way to trigger and send input parameters to the State Machine, and AWS DynamoDB as the persistent store for each item Status. The final workflow looks like this:
 
-![stepfunctions_graph](/images/workflow.png)
+![stepfunctions_graph](/images/diagram.png)
 
 
 ## Deploy the sample application
